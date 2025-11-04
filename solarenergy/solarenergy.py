@@ -1,44 +1,29 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-import joblib  # Import joblib for saving
+import numpy as np
+import pvlib
 
-# --- 1. Load Data ---
-print("Loading data...")
-df = pd.read_csv('usaWithWeather.csv')
 
-# --- 2. Feature Selection (Define X and y) ---
-# Use the same features as before
-input_features = [
-    'Cloud Type',
-    'Solar Zenith Angle',
-    'Relative Humidity',
-    'Temperature',
-    'Month',
-    'Day',
-    'Hour'
-]
-target_variable = 'GHI'
+# This module used to train a RandomForest model. For the pipeline we
+# provide a small helper that computes solar energy (kWh/m^2) from
+# a pvlib Location using the clearsky model. The original training
+# script is left out of the automated flow but can still be used
+# for model training offline.
 
-# IMPORTANT: Train on ALL data now
-# Since we've validated the model, we now train it on the 
-# entire dataset to make it as accurate as possible.
-X = df[input_features]
-y = df[target_variable]
 
-# --- 3. Model Training ---
-print("Training the full model...")
-model = RandomForestRegressor(
-    n_estimators=100,
-    max_depth=15,
-    min_samples_leaf=5,
-    n_jobs=-1,
-    random_state=42
-)
-model.fit(X, y)
-print("Model training complete.")
+def compute_daily_energy_from_location_date(
+    latitude: float,
+    longitude: float,
+    altitude: float,
+    """Deprecated shim: the energy helpers are now in `aeroaqua.energy` package.
 
-# --- 4. Save the Model to a File ---
-model_filename = 'solar_predictor_model.joblib'
-joblib.dump(model, model_filename)
+    Import the new helper from:
 
-print(f"\nSUCCESS: Your 'Model 1' has been trained and saved as '{model_filename}'")
+        from aeroaqua.energy import compute_daily_energy_from_location_date
+
+    This shim raises an informative ImportError to avoid accidental imports of the old module.
+    """
+
+    raise ImportError(
+        "solarenergy helpers moved to 'aeroaqua.energy.solarenergy'. "
+        "Import from 'aeroaqua.energy' instead."
+    )

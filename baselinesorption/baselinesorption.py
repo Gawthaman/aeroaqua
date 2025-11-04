@@ -2,8 +2,13 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from io import StringIO
 
-# Step 1: Load the dataset from the paper's appendix
-csv_data = """RH_Percent,Solar_Energy_kWhr_m2,Liters_Per_Day
+
+# The small experimental dataset from the paper is embedded below.
+# We fit a LinearRegression at import time and expose a helper
+# function `predict_water_yield` that returns liters/day given
+# solar energy (kWh/m^2) and relative humidity (%).
+
+_csv_data = """RH_Percent,Solar_Energy_kWhr_m2,Liters_Per_Day
 20,5,2.5
 30,5,3.0
 40,5,3.5
@@ -36,21 +41,36 @@ csv_data = """RH_Percent,Solar_Energy_kWhr_m2,Liters_Per_Day
 70,6.66,6.0
 """
 
-df = pd.read_csv(StringIO(csv_data))
+_df = pd.read_csv(StringIO(_csv_data))
 
-# Step 2: Define the features (X) and the target variable (y)
-features = ['RH_Percent', 'Solar_Energy_kWhr_m2']
-target = 'Liters_Per_Day'
+_features = ['RH_Percent', 'Solar_Energy_kWhr_m2']
+_target = 'Liters_Per_Day'
 
-X = df[features]
-y = df[target]
+_X = _df[_features]
+_y = _df[_target]
 
-# Step 3: Create and train the linear regression model
-model = LinearRegression()
-model.fit(X, y)
+_model = LinearRegression()
+_model.fit(_X, _y)
 
-# Step 4: Display the model's intercept and coefficients to verify
-print("Model Verification:")
-print(f"Intercept (B0): {model.intercept_:.4f}")
-print(f"RH_Percent Coefficient (B1): {model.coef_[0]:.4f}")
-print(f"Solar_Energy Coefficient (B2): {model.coef_[1]:.4f}")
+
+def predict_water_yield(solar_energy_kwh_m2: float, rh_percent: float) -> float:
+	"""Predict liters per day given solar energy (kWh/m^2) and RH (%).
+
+	Args:
+		solar_energy_kwh_m2: daily solar energy in kWh per m^2
+		rh_percent: relative humidity in percent (0-100)
+
+	Returns:
+		Predicted liters per day (float)
+	"""
+	X_pred = [[rh_percent, solar_energy_kwh_m2]]
+	pred = _model.predict(X_pred)[0]
+	return float(pred)
+
+
+if __name__ == '__main__':
+	# simple verification printout
+	print("Model Verification:")
+	print(f"Intercept (B0): {_model.intercept_:.4f}")
+	print(f"RH_Percent Coefficient (B1): {_model.coef_[0]:.4f}")
+	print(f"Solar_Energy Coefficient (B2): {_model.coef_[1]:.4f}")
