@@ -1,0 +1,34 @@
+Pipeline: PVLIB zenith -> RandomForest solar energy -> Linear regression water yield
+
+Overview:
+This pipeline computes daily water yield (liters/day) from location/date and weather scalars using a two-stage modeling approach:
+1) Solar zenith angle computation: Use pvlib to compute solar positions (apparent zenith) for the requested date, location, and sampling frequency. This produces a time-series of solar zenith angles.
+2) RandomForest GHI regressor: The RandomForest model consumes per-timestep features (Solar Zenith Angle plus broadcasted scalar inputs) to predict GHI (W/m^2) at each sample. Predicted GHI is integrated over the day to yield daily solar energy in kWh/m^2.
+3) Linear regression water yield: A small linear regression model predicts liters per day from the daily solar energy (kWh/m^2) and relative humidity (%) using a fitted experimental dataset.
+
+Required inputs:
+- date_str: string (YYYY-MM-DD) — date for which to compute energy and water yield.
+- freq: string (pandas frequency, e.g., '10T') — sampling frequency for solar position/time series.
+- latitude: float — location latitude (decimal degrees).
+- longitude: float — location longitude (decimal degrees).
+- altitude: float — location altitude in meters.
+- timezone: string — IANA timezone name (e.g., 'America/Toronto').
+- cloud_type: float — numeric scalar representing cloud condition (broadcast for every timestep) used as an input feature to the RF model.
+- rh_percent: float — relative humidity in percent (0-100); used in RF features and as input to the linear regression that predicts liters/day.
+- temperature_c: float — air temperature in degrees Celsius; used as an input feature to the RF model.
+- model_path: string or null — path to the trained RandomForest model (joblib). If omitted, the code searches fallback locations in the repo/workdir for `solar_predictor_model.joblib`.
+
+Required files / dependencies:
+- A trained RandomForest model file (joblib), typically named `solar_predictor_model.joblib` and found at one of the fallback locations or provided via `model_path`.
+- Python dependencies: pandas, pvlib, scikit-learn, joblib (ensure these are installed in the environment).
+- The linear regression used for water yield is embedded in the code (no external file required).
+
+Outputs:
+- A dictionary with keys:
+  - date: date (YYYY-MM-DD) — the requested date as a date object.
+  - solar_energy_kwh_m2: float — integrated daily solar energy in kWh per m^2 computed from RF-predicted GHI.
+  - rh_percent: float — the input RH percent echoed back.
+  - predicted_liters_per_day: float — predicted water yield (liters/day) from the linear regression model.
+
+Notes for Gemini ingestion:
+Provide this file as-is to give Gemini a compact, structured description of the pipeline steps, required inputs (types), and outputs. The `Cloud Type` column exists in the project dataset (`usaWithWeather.csv`) and can be used to train a classifier if automatic cloud_type prediction is desired later.

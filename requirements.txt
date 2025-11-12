@@ -1,5 +1,11 @@
+```
+
 pandas>=1.3
 pvlib>=0.9
 scikit-learn>=1.0
 joblib
 numpy
+tqdm
+
+```
+
